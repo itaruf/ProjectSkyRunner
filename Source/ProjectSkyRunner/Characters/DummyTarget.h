@@ -16,9 +16,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	// Visual representation of the dummy target
+	// Visual representation of the dummy target using a skeletal mesh
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	class UStaticMeshComponent* TargetMesh;
+	class USkeletalMeshComponent* DummyMesh;
 
 	// Health stats
 	UPROPERTY(EditAnywhere, Category = "Stats")

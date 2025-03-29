@@ -1,5 +1,6 @@
 ﻿#include "DummyTarget.h"
-#include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimInstance.h"
 
 ADummyTarget::ADummyTarget()
 {
@@ -9,10 +10,10 @@ ADummyTarget::ADummyTarget()
 	MaxHealth = 100.0f;
 	CurrentHealth = MaxHealth;
 
-	// Create and setup the mesh component
-	TargetMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TargetMesh"));
-	RootComponent = TargetMesh;
-	TargetMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	// Create and setup the skeletal mesh component
+	DummyMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("DummyMesh"));
+	RootComponent = DummyMesh;
+	DummyMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
 void ADummyTarget::BeginPlay()
@@ -61,5 +62,8 @@ bool ADummyTarget::IsDead_Implementation() const
 void ADummyTarget::HandleDeath()
 {
 	UE_LOG(LogTemp, Warning, TEXT("DummyTarget is dead!"));
+
+	// Optionally, play a death animation here via DummyMesh->GetAnimInstance()
+
 	Destroy();
 }
