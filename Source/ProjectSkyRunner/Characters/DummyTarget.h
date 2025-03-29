@@ -16,7 +16,11 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	// Visual representation of the dummy target using a skeletal mesh
+	// Capsule component for collision
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	class UCapsuleComponent* CapsuleComp;
+
+	// Skeletal mesh component for visuals and animation
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	class USkeletalMeshComponent* DummyMesh;
 
