@@ -1,6 +1,7 @@
 ﻿#include "DummyTarget.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "../Components/HitEventComponent.h"
 #include "Animation/AnimInstance.h"
 
 ADummyTarget::ADummyTarget()
@@ -20,6 +21,9 @@ ADummyTarget::ADummyTarget()
 	DummyMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("DummyMesh"));
 	DummyMesh->SetupAttachment(CapsuleComp);
 	DummyMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	// Create and setup the hit event component
+	HitEventComp = CreateDefaultSubobject<UHitEventComponent>(TEXT("HitEventComp"));
 }
 
 void ADummyTarget::BeginPlay()
@@ -70,4 +74,11 @@ void ADummyTarget::HandleDeath()
 	UE_LOG(LogTemp, Warning, TEXT("DummyTarget is dead!"));
 	// Optionally, play a death animation via DummyMesh->GetAnimInstance()
 	Destroy();
+}
+
+// --- IHitEventProviderInterface Methods Implementation ---
+
+UHitEventComponent* ADummyTarget::GetHitEventComponent_Implementation() const
+{
+	return HitEventComp;
 }
