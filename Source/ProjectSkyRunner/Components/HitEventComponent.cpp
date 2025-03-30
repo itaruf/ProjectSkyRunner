@@ -5,7 +5,14 @@ UHitEventComponent::UHitEventComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-void UHitEventComponent::NotifyHit(AActor* InstigatingActor, FVector HitLocation)
+void UHitEventComponent::NotifyHit(AActor* InstigatingActor, FVector HitLocation, float DamageAmount)
 {
-	OnHit.Broadcast(InstigatingActor, HitLocation);
+	// Build the damage data struct.
+	FDamageData DamageData;
+	DamageData.InstigatingActor = InstigatingActor;
+	DamageData.HitLocation = HitLocation;
+	DamageData.DamageAmount = DamageAmount;
+
+	// Broadcast the hit event with the new data.
+	OnHit.Broadcast(DamageData);
 }
