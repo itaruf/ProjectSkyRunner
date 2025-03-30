@@ -1,10 +1,10 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "Interfaces/DamageProviderInterface.h"
+#include "Components/DamageComponent.h"
 #include "ProjectSkyRunnerCharacter.generated.h"
 
 class USpringArmComponent;
@@ -16,7 +16,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class AProjectSkyRunnerCharacter : public ACharacter
+class AProjectSkyRunnerCharacter : public ACharacter, public IDamageProviderInterface
 {
 	GENERATED_BODY()
 
@@ -46,7 +46,6 @@ class AProjectSkyRunnerCharacter : public ACharacter
 
 public:
 	AProjectSkyRunnerCharacter();
-	
 
 protected:
 
@@ -56,18 +55,24 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 			
-
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
+
 	// To add mapping context
 	virtual void BeginPlay();
 
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-};
 
+	/** Damage component to deal damage **/
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UDamageComponent* DamageComp;
+
+	// --- IDamageProviderInterface Methods ---
+	virtual UDamageComponent* GetDamageComponent_Implementation() const override;
+};
