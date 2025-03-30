@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "../Structures/DamageData.h" // Updated to use DamageData
+#include "../Structures/DamageData.h"
 #include "HitEventComponent.generated.h"
 
 // Declare a dynamic multicast delegate that uses DamageData as its parameter.
