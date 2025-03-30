@@ -6,7 +6,7 @@ UDamageDealerComponent::UDamageDealerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	// Set default damage values.
+	// Initialize default damage values.
 	DamageData.DamageAmount = 10.f;
 	DamageData.DamageType = EDamageType::Physical;
 	DamageData.HitImpulse = FVector::ZeroVector;
@@ -20,6 +20,12 @@ void UDamageDealerComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
+float UDamageDealerComponent::CalculateDamage(const FDamageData& InDamageData, AActor* Target) const
+{
+	// Base implementation: simply return the base damage.
+	return InDamageData.DamageAmount;
+}
+
 void UDamageDealerComponent::DealDamage(AActor* Target)
 {
 	if (!Target)
@@ -30,14 +36,17 @@ void UDamageDealerComponent::DealDamage(AActor* Target)
 	// Check if the target implements the damageable interface.
 	if (Target->Implements<UDamageableInterface>())
 	{
-		// Create a copy of the default damage data and fill in runtime details.
+		// Build the damage data with runtime details.
 		FDamageData DamageToApply = DamageData;
 		DamageToApply.InstigatingActor = GetOwner();
 		DamageToApply.HitLocation = Target->GetActorLocation();
 		DamageToApply.DamageCauser = GetOwner();
 		DamageToApply.TimeStamp = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
 
-		// Apply damage using the damage amount from the structure.
-		IDamageableInterface::Execute_TakeDamage(Target, DamageToApply.DamageAmount);
+		// Calculate final damage (may be modified by derived classes).
+		float FinalDamage = CalculateDamage(DamageToApply, Target);
+
+		// Apply damage using the damageable interface.
+		IDamageableInterface::Execute_TakeDamage(Target, FinalDamage);
 	}
 }
