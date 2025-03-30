@@ -3,25 +3,23 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "../Structures/DamageData.h"
-#include "DamageComponent.generated.h"
+
+#include "DamageDealerComponent.generated.h"  // MUST be the last include
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class PROJECTSKYRUNNER_API UDamageComponent : public UActorComponent
+class PROJECTSKYRUNNER_API UDamageDealerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	UDamageComponent();
+	UDamageDealerComponent();
 
-	// Default damage values stored in a structured format.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
 	FDamageData DamageData;
 
-	// Deals damage to the specified target.
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void DealDamage(AActor* Target);
 
 protected:
 	virtual void BeginPlay() override;
 };
-

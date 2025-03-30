@@ -1,8 +1,8 @@
-﻿#include "DamageComponent.h"
+﻿#include "DamageDealerComponent.h"
 #include "../Interfaces/DamageableInterface.h"
 #include "GameFramework/Actor.h"
 
-UDamageComponent::UDamageComponent()
+UDamageDealerComponent::UDamageDealerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
@@ -15,12 +15,12 @@ UDamageComponent::UDamageComponent()
 	// InstigatingActor, HitLocation, DamageCauser, and TimeStamp will be set at runtime.
 }
 
-void UDamageComponent::BeginPlay()
+void UDamageDealerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void UDamageComponent::DealDamage(AActor* Target)
+void UDamageDealerComponent::DealDamage(AActor* Target)
 {
 	if (!Target)
 	{

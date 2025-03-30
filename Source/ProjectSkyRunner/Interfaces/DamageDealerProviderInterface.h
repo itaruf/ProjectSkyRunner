@@ -2,11 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "../Components/DamageComponent.h"
-#include "DamageProviderInterface.generated.h"
+#include "../Components/DamageDealerComponent.h"
+#include "DamageDealerProviderInterface.generated.h"
 
 UINTERFACE(Blueprintable)
-class PROJECTSKYRUNNER_API UDamageProviderInterface : public UInterface
+class PROJECTSKYRUNNER_API UDamageDealerProviderInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -14,7 +14,7 @@ class PROJECTSKYRUNNER_API UDamageProviderInterface : public UInterface
 /**
  * Interface for providing a DamageComponent.
  */
-class PROJECTSKYRUNNER_API IDamageProviderInterface
+class PROJECTSKYRUNNER_API IDamageDealerProviderInterface
 {
 	GENERATED_BODY()
 
@@ -23,5 +23,5 @@ public:
 	 * Returns the DamageComponent associated with this actor.
 	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Damage")
-	UDamageComponent* GetDamageComponent() const;
+	UDamageDealerComponent* GetDamageDealerComponent() const;
 };

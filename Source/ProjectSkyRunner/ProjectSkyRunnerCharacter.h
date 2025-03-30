@@ -3,8 +3,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "Interfaces/DamageProviderInterface.h"
-#include "Components/DamageComponent.h"
+#include "Interfaces/DamageDealerProviderInterface.h"
+#include "Components/DamageDealerComponent.h"
 #include "ProjectSkyRunnerCharacter.generated.h"
 
 class USpringArmComponent;
@@ -16,7 +16,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class AProjectSkyRunnerCharacter : public ACharacter, public IDamageProviderInterface
+class AProjectSkyRunnerCharacter : public ACharacter, public IDamageDealerProviderInterface
 {
 	GENERATED_BODY()
 
@@ -71,8 +71,8 @@ public:
 
 	/** Damage component to deal damage **/
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UDamageComponent* DamageComp;
+	UDamageDealerComponent* DamageDealerComp;
 
-	// --- IDamageProviderInterface Methods ---
-	virtual UDamageComponent* GetDamageComponent_Implementation() const override;
+	// --- IDamageDealerProviderInterface Methods ---
+	virtual UDamageDealerComponent* GetDamageDealerComponent_Implementation() const override;
 };

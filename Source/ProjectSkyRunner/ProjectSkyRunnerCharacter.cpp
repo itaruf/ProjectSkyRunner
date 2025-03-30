@@ -6,7 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "InputActionValue.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/DamageComponent.h"
+#include "Components/DamageDealerComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -44,7 +44,7 @@ AProjectSkyRunnerCharacter::AProjectSkyRunnerCharacter()
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	// Create and attach the damage component
-	DamageComp = CreateDefaultSubobject<UDamageComponent>(TEXT("DamageComp"));
+	DamageDealerComp = CreateDefaultSubobject<UDamageDealerComponent>(TEXT("DamageDealerComp"));
 }
 
 void AProjectSkyRunnerCharacter::BeginPlay()
@@ -111,7 +111,7 @@ void AProjectSkyRunnerCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-UDamageComponent* AProjectSkyRunnerCharacter::GetDamageComponent_Implementation() const
+UDamageDealerComponent* AProjectSkyRunnerCharacter::GetDamageDealerComponent_Implementation() const
 {
-	return DamageComp;
+	return DamageDealerComp;
 }
