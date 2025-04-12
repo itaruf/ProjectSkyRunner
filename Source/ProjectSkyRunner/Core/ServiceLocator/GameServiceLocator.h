@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "../../Inventory/Components/InventoryComponent.h"
 #include "../../Inventory/Services/InventoryService.h"
 #include "../../Audio/Services/AudioService.h"
 #include "GameServiceLocator.generated.h"
@@ -10,6 +11,7 @@
 // Forward declarations of specific services
 class UInventoryService;
 class UAudioService;
+class UInventoryComponent;
 
 // UGameServiceLocator acts as a global registry for game-wide services,
 // enabling other parts of the game to retrieve those services on demand
@@ -24,6 +26,9 @@ private:
 	// The key is a unique FName identifier for the service
 	// The value is a UObject pointer to the actual service instance
 	static TMap<FName, UObject*> Services;
+
+	// A weak pointer to the player's inventory component
+	static TWeakObjectPtr<UInventoryComponent> PlayerInventoryComponent;
 
 public:
 	// Template function that retrieves a service by name
@@ -49,9 +54,7 @@ public:
 	// Typically called during game shutdown
 	UFUNCTION(BlueprintCallable, Category = "Services")
 	static void ClearServices();
-
-	// === Blueprint-compatible service getters ===
-
+	
 	// Returns the registered Inventory Service
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Services")
 	static UInventoryService* GetInventoryService();
@@ -59,4 +62,12 @@ public:
 	// Returns the registered Audio Service
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Services")
 	static UAudioService* GetAudioService();
+
+	// Registers an inventory component
+	UFUNCTION(BlueprintCallable, Category = "Services|Components")
+	static void RegisterInventoryComponent(UInventoryComponent* InventoryComp);
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Services|Components")
+	// Retrieves the currently registered player inventory component
+	static UInventoryComponent* GetPlayerInventoryComponent();
 };
