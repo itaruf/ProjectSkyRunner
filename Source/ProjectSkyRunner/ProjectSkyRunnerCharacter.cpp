@@ -1,12 +1,12 @@
 #include "ProjectSkyRunnerCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "InputActionValue.h"
+#include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/DamageDealerComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -45,6 +45,9 @@ AProjectSkyRunnerCharacter::AProjectSkyRunnerCharacter()
 
 	// Create and attach the damage component
 	DamageDealerComp = CreateDefaultSubobject<UDamageDealerComponent>(TEXT("DamageDealerComp"));
+	
+	// Create and attach the inventory component
+	InventoryComp = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComp"));
 }
 
 void AProjectSkyRunnerCharacter::BeginPlay()
@@ -114,4 +117,9 @@ void AProjectSkyRunnerCharacter::Look(const FInputActionValue& Value)
 UDamageDealerComponent* AProjectSkyRunnerCharacter::GetDamageDealerComponent_Implementation() const
 {
 	return DamageDealerComp;
+}
+
+UInventoryComponent* AProjectSkyRunnerCharacter::GetInventoryComponent_Implementation() const
+{
+	return InventoryComp;
 }

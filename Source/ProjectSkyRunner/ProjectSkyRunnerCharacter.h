@@ -1,10 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "Logging/LogMacros.h"
-#include "Interfaces/DamageDealerProviderInterface.h"
 #include "Components/DamageDealerComponent.h"
+#include "GameFramework/Character.h"
+#include "Interfaces/DamageDealerProviderInterface.h"
+#include "Inventory/Interfaces/InventoryProviderInterface.h"
+#include "Logging/LogMacros.h"
 #include "ProjectSkyRunnerCharacter.generated.h"
 
 class USpringArmComponent;
@@ -16,7 +17,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class AProjectSkyRunnerCharacter : public ACharacter, public IDamageDealerProviderInterface
+class AProjectSkyRunnerCharacter : public ACharacter, public IDamageDealerProviderInterface, public IInventoryProviderInterface
 {
 	GENERATED_BODY()
 
@@ -27,7 +28,7 @@ class AProjectSkyRunnerCharacter : public ACharacter, public IDamageDealerProvid
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
+
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
@@ -48,13 +49,12 @@ public:
 	AProjectSkyRunnerCharacter();
 
 protected:
-
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-			
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -73,6 +73,13 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UDamageDealerComponent* DamageDealerComp;
 
+	/** Inventory component to deal damage **/
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UInventoryComponent* InventoryComp;
+
 	// --- IDamageDealerProviderInterface Methods ---
 	virtual UDamageDealerComponent* GetDamageDealerComponent_Implementation() const override;
+
+	// --- IInventoryProviderInterface Methods ---
+	virtual UInventoryComponent* GetInventoryComponent_Implementation() const override;
 };
