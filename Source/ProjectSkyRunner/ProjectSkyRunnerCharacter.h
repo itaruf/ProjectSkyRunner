@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/DamageDealerComponent.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/DamageDealerProviderInterface.h"
 #include "Inventory/Interfaces/InventoryProviderInterface.h"
@@ -45,8 +44,12 @@ class AProjectSkyRunnerCharacter : public ACharacter, public IDamageDealerProvid
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	/** Gravity Toggle Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* GravityToggleAction;
+
 public:
-	AProjectSkyRunnerCharacter();
+	AProjectSkyRunnerCharacter(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	/** Called for movement input */
@@ -55,31 +58,30 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	/** Called to toggle gravity mode */
+	void ToggleGravityMode();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 	// To add mapping context
-	virtual void BeginPlay();
+	virtual void BeginPlay() override;
 
 public:
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	/** Damage component to deal damage **/
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UDamageDealerComponent* DamageDealerComp;
-
 	/** Inventory component to deal damage **/
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UInventoryComponent* InventoryComp;
 
 	// --- IDamageDealerProviderInterface Methods ---
 	virtual UDamageDealerComponent* GetDamageDealerComponent_Implementation() const override;
-
 	// --- IInventoryProviderInterface Methods ---
 	virtual UInventoryComponent* GetInventoryComponent_Implementation() const override;
 };
