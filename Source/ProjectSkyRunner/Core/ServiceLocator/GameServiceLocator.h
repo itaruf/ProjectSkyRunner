@@ -37,8 +37,14 @@ public:
 	template <typename T>
 	static T* GetService(const FName ServiceName)
 	{
-		UObject** FoundService = Services.Find(ServiceName);
-		return FoundService ? Cast<T>(*FoundService) : nullptr;
+		if (UObject** FoundService = Services.Find(ServiceName))
+		{
+			if (IsValid(*FoundService))
+			{
+				return Cast<T>(*FoundService);
+			}
+		}
+		return nullptr;
 	}
 
 	// Registers a service instance under the specified name
@@ -54,7 +60,7 @@ public:
 	// Typically called during game shutdown
 	UFUNCTION(BlueprintCallable, Category = "Services")
 	static void ClearServices();
-	
+
 	// Returns the registered Inventory Service
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Services")
 	static UInventoryService* GetInventoryService();
@@ -66,7 +72,7 @@ public:
 	// Registers an inventory component
 	UFUNCTION(BlueprintCallable, Category = "Services|Components")
 	static void RegisterInventoryComponent(UInventoryComponent* InventoryComp);
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Services|Components")
 	// Retrieves the currently registered player inventory component
 	static UInventoryComponent* GetPlayerInventoryComponent();

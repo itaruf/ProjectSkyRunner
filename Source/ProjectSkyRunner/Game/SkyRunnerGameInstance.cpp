@@ -32,15 +32,20 @@ void USkyRunnerGameInstance::Shutdown_Implementation()
 {
 	// Gracefully shut down all services before clearing the registry
 	// This allows each service to clean up any resources it holds
-
-	if (UInventoryService* InventoryService = UGameServiceLocator::GetService<UInventoryService>("Inventory"))
+	if (auto InventoryService = UGameServiceLocator::GetService<UInventoryService>("Inventory"))
 	{
-		IGameServiceInterface::Execute_ShutdownService(InventoryService);
+		if (InventoryService->GetClass()->ImplementsInterface(UGameServiceInterface::StaticClass()))
+		{
+			IGameServiceInterface::Execute_ShutdownService(InventoryService);
+		}
 	}
 
-	if (UAudioService* AudioService = UGameServiceLocator::GetService<UAudioService>("Audio"))
+	if (auto AudioService = UGameServiceLocator::GetService<UAudioService>("Audio"))
 	{
-		IGameServiceInterface::Execute_ShutdownService(AudioService);
+		if (AudioService->GetClass()->ImplementsInterface(UGameServiceInterface::StaticClass()))
+		{
+			IGameServiceInterface::Execute_ShutdownService(AudioService);
+		}
 	}
 
 	// Remove all service registrations to ensure a clean shutdown
