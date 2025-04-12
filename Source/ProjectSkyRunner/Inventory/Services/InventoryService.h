@@ -19,13 +19,13 @@ class PROJECTSKYRUNNER_API UInventoryService : public UObject, public IGameServi
 public:
 	// Constructor
 	UInventoryService();
-	
+
 	// Static factory method for Blueprint instantiation
 	UFUNCTION(BlueprintCallable, Category = "Services")
 	static UInventoryService* CreateInventoryService(UObject* WorldContext);
 
 	/* IGameService methods */
-	
+
 	// Override the blueprint native event implementations:
 	// Called at service initialization (e.g., during GameInstance::Init)
 	virtual void InitializeService_Implementation() override;
@@ -48,10 +48,4 @@ public:
 	// If the item doesn't exist, returns 0
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	int32 GetItemCount(const FName ItemID) const;
-
-private:
-	// Internal storage for items: maps each item ID to its quantity
-	// Marked as UPROPERTY to ensure proper serialization and garbage collection
-	UPROPERTY()
-	TMap<FName, int32> Inventory;
 };
