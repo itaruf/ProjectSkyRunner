@@ -25,7 +25,7 @@ private:
 	// A static map that holds all registered services
 	// The key is a unique FName identifier for the service
 	// The value is a UObject pointer to the actual service instance
-	static TMap<FName, UObject*> Services;
+	static TMap<FName, TWeakObjectPtr<UObject>> Services;
 
 	// A weak pointer to the player's inventory component
 	static TWeakObjectPtr<UInventoryComponent> PlayerInventoryComponent;
@@ -37,11 +37,11 @@ public:
 	template <typename T>
 	static T* GetService(const FName ServiceName)
 	{
-		if (UObject** FoundService = Services.Find(ServiceName))
+		if (TWeakObjectPtr<UObject>* FoundService = Services.Find(ServiceName))
 		{
-			if (IsValid(*FoundService))
+			if (FoundService->IsValid())
 			{
-				return Cast<T>(*FoundService);
+				return Cast<T>(FoundService->Get());
 			}
 		}
 		return nullptr;

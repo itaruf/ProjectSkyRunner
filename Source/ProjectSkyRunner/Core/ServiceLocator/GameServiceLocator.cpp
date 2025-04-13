@@ -3,12 +3,12 @@
 #include "GameServiceLocator.h"
 
 // Define the static container
-TMap<FName, UObject*> UGameServiceLocator::Services;
+TMap<FName, TWeakObjectPtr<UObject>> UGameServiceLocator::Services;
 TWeakObjectPtr<UInventoryComponent> UGameServiceLocator::PlayerInventoryComponent = nullptr;
 
 void UGameServiceLocator::RegisterService(const FName ServiceName, UObject* Service)
 {
-	if (Service)
+	if (IsValid(Service))
 	{
 		Services.Add(ServiceName, Service);
 	}
@@ -41,11 +41,25 @@ UInventoryComponent* UGameServiceLocator::GetPlayerInventoryComponent()
 // Returns the registered Inventory Service
 UInventoryService* UGameServiceLocator::GetInventoryService()
 {
-	return Cast<UInventoryService>(Services.FindRef("Inventory"));
+	if (TWeakObjectPtr<UObject>* FoundService = Services.Find("Inventory"))
+	{
+		if (FoundService->IsValid())
+		{
+			return Cast<UInventoryService>(FoundService->Get());
+		}
+	}
+	return nullptr;
 }
 
 // Returns the registered Audio Service
 UAudioService* UGameServiceLocator::GetAudioService()
 {
-	return Cast<UAudioService>(Services.FindRef("Audio"));
+	if (TWeakObjectPtr<UObject>* FoundService = Services.Find("Audio"))
+	{
+		if (FoundService->IsValid())
+		{
+			return Cast<UAudioService>(FoundService->Get());
+		}
+	}
+	return nullptr;
 }
