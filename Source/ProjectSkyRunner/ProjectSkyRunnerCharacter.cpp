@@ -102,7 +102,15 @@ void AProjectSkyRunnerCharacter::Move(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
-		const FRotator Rotation = Controller->GetControlRotation();
+		auto GravityComp = Cast<UGravityCharacterMovementComponent>(GetCharacterMovement());
+
+		// Ignore movement input when floating
+		if (GravityComp && GravityComp->bIsFloating)
+		{
+			return; 
+		}
+
+ 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
