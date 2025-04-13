@@ -47,6 +47,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gravity|Landing")
 	FVector LastImpactNormal;
 
+	UFUNCTION()
+	void OnCharacterHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 	void HandleGravityShift();
 	void ExitGravityMode();
 	void StartDive(const FVector& DiveDirection);

@@ -1,4 +1,6 @@
 ﻿#include "GravityCharacterMovementComponent.h"
+
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 
 UGravityCharacterMovementComponent::UGravityCharacterMovementComponent()
@@ -12,6 +14,11 @@ void UGravityCharacterMovementComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	OriginalGravityScale = GravityScale;
+
+	if (CharacterOwner && CharacterOwner->GetCapsuleComponent())
+	{
+		CharacterOwner->GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &UGravityCharacterMovementComponent::OnCharacterHit);
+	}
 }
 
 void UGravityCharacterMovementComponent::HandleGravityShift()
@@ -100,17 +107,49 @@ void UGravityCharacterMovementComponent::OnLandedInternal(const FHitResult& Hit)
 	LastImpactNormal = Hit.ImpactNormal;
 	float Dot = FVector::DotProduct(LastImpactNormal.GetSafeNormal(), FVector::UpVector);
 
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("Landed - Dot with Up: %.2f"), Dot));
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, FString::Printf(TEXT("Surface Normal: %s"), *LastImpactNormal.ToString()));
+	}
+
 	if (bIsDiving)
 	{
+		bIsDiving = false;
+
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Dive Interrupted - Impact Detected"));
+		}
+
 		if (Dot >= FlatSurfaceThreshold)
 		{
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Flat Surface - Exiting Gravity Mode"));
+			}
 			ExitGravityMode();
 		}
 		else
 		{
-			bIsDiving = false;
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Magenta, TEXT("Steep Surface - Staying in Gravity Mode"));
+			}
+
 			bIsFloating = true;
 			GravityScale = 0.f;
+
+			FVector GravityUp = LastImpactNormal.GetSafeNormal();
+			FVector NewForward = FVector::CrossProduct(FVector::RightVector, GravityUp).GetSafeNormal();
+			FRotator NewRotation = FRotationMatrix::MakeFromXZ(NewForward, GravityUp).Rotator();
+
+			if (CharacterOwner)
+			{
+				CharacterOwner->SetActorRotation(NewRotation);
+			}
+
+			DiveGravityDirection = -GravityUp;
 		}
 		return;
 	}
@@ -119,7 +158,73 @@ void UGravityCharacterMovementComponent::OnLandedInternal(const FHitResult& Hit)
 	{
 		if (Dot >= FlatSurfaceThreshold)
 		{
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Floating Hit Flat Surface - Exiting Gravity Mode"));
+			}
 			ExitGravityMode();
 		}
 	}
 }
+
+void UGravityCharacterMovementComponent::OnCharacterHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (!bIsDiving && !bIsFloating) return;
+	if (!Hit.bBlockingHit) return;
+
+	LastImpactNormal = Hit.ImpactNormal;
+	float Dot = FVector::DotProduct(LastImpactNormal.GetSafeNormal(), FVector::UpVector);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString::Printf(TEXT("Hit - Dot with Up: %.2f"), Dot));
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, FString::Printf(TEXT("Impact Normal: %s"), *LastImpactNormal.ToString()));
+	}
+
+	if (bIsDiving)
+	{
+		bIsDiving = false;
+
+		if (Dot >= FlatSurfaceThreshold)
+		{
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Flat Surface - Exiting Gravity Mode"));
+
+			ExitGravityMode();
+			return;
+		}
+		else
+		{
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Magenta, TEXT("Steep Surface - Snapping to surface"));
+
+			bIsFloating = true;
+			GravityScale = 0.f;
+
+			FVector GravityUp = LastImpactNormal.GetSafeNormal();
+			FVector NewForward = FVector::CrossProduct(FVector::RightVector, GravityUp).GetSafeNormal();
+			FRotator NewRotation = FRotationMatrix::MakeFromXZ(NewForward, GravityUp).Rotator();
+
+			if (CharacterOwner)
+			{
+				CharacterOwner->SetActorRotation(NewRotation);
+			}
+
+			DiveGravityDirection = -GravityUp;
+			return;
+		}
+	}
+
+	if (bIsFloating)
+	{
+		if (Dot >= FlatSurfaceThreshold)
+		{
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Floating + Flat Impact - Exiting Gravity Mode"));
+
+			ExitGravityMode();
+		}
+	}
+}
+
