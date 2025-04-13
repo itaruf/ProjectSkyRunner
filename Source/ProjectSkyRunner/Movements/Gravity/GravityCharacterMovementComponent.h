@@ -16,17 +16,30 @@ public:
 	UGravityCharacterMovementComponent();
 
 	// Indicates whether gravity mode (floating) is active
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gravity Mode")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gravity|Mode")
 	bool bGravityMode;
 
 	// Original gravity scale to restore after toggling gravity mode off
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gravity|Mode")
 	float OriginalGravityScale;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gravity|Mode")
 	bool bIsFloating;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gravity|Mode")
 	bool bIsDiving;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gravity|Dive")
+	FVector DiveGravityDirection = FVector(0, 0, -1);
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gravity|Dive")
+	float DiveGravityMultiplier = 0.1f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gravity|Dive")
+	float DiveSpeed = 2000.f;
 
 	void HandleGravityShift(); // R1
 	void ExitGravityMode();    // L1
+	void StartDive(const FVector& DiveDirection); // To be defined
 
 protected:
 	virtual void BeginPlay() override;
