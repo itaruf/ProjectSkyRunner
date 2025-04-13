@@ -1,4 +1,5 @@
 ﻿#include "GravityCharacterMovementComponent.h"
+#include "GameFramework/Character.h"
 
 UGravityCharacterMovementComponent::UGravityCharacterMovementComponent()
 {
@@ -17,9 +18,15 @@ void UGravityCharacterMovementComponent::HandleGravityShift()
 {
 	if (!bIsFloating && !bIsDiving)
 	{
+		if (CharacterOwner && CharacterOwner->GetMovementComponent()->IsMovingOnGround())
+		{
+			FVector Impulse = FVector(0.f, 0.f, LiftImpulse);
+			AddImpulse(Impulse);
+
+			Velocity.Z = LiftImpulse;
+		}
 		bIsFloating = true;
 		GravityScale = 0.f;
-		Velocity = FVector::ZeroVector;
 		SetMovementMode(MOVE_Falling);
 	}
 }
@@ -29,7 +36,14 @@ void UGravityCharacterMovementComponent::ExitGravityMode()
 	bIsFloating = false;
 	bIsDiving = false;
 	GravityScale = OriginalGravityScale;
-	SetMovementMode(MOVE_Falling);
+	if (CharacterOwner && CharacterOwner->GetMovementComponent()->IsMovingOnGround())
+	{
+		SetMovementMode(MOVE_Walking);
+	}
+	else
+	{
+		SetMovementMode(MOVE_Falling);
+	}
 }
 
 void UGravityCharacterMovementComponent::StartDive(const FVector& DiveDirection)
@@ -70,4 +84,33 @@ void UGravityCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iter
 		return;
 	}
 	Super::PhysFalling(deltaTime, Iterations);
+}
+
+void UGravityCharacterMovementComponent::OnLandedInternal(const FHitResult& Hit)
+{
+	LastImpactNormal = Hit.ImpactNormal;
+	float Dot = FVector::DotProduct(LastImpactNormal.GetSafeNormal(), FVector::UpVector);
+
+	if (bIsDiving)
+	{
+		if (Dot >= FlatSurfaceThreshold)
+		{
+			ExitGravityMode();
+		}
+		else
+		{
+			bIsDiving = false;
+			bIsFloating = true;
+			GravityScale = 0.f;
+		}
+		return;
+	}
+
+	if (bIsFloating)
+	{
+		if (Dot >= FlatSurfaceThreshold)
+		{
+			ExitGravityMode();
+		}
+	}
 }
