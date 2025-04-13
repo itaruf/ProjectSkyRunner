@@ -22,9 +22,12 @@ public:
 	// Original gravity scale to restore after toggling gravity mode off
 	float OriginalGravityScale;
 
-	// Toggles gravity mode on/off
-	UFUNCTION(BlueprintCallable)
-	void ToggleGravityMode();
+	// CustomGravityCharacterMovementComponent.h (additions)
+	bool bIsFloating;
+	bool bIsDiving;
+
+	void HandleGravityShift(); // R1
+	void ExitGravityMode();    // L1
 
 protected:
 	virtual void BeginPlay() override;
