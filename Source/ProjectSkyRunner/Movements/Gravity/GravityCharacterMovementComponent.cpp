@@ -3,20 +3,20 @@
 UGravityCharacterMovementComponent::UGravityCharacterMovementComponent()
 {
 	bGravityMode = false;
+	bIsFloating = false;
+	bIsDiving = false;
 }
 
 void UGravityCharacterMovementComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	OriginalGravityScale = GravityScale; // Store original gravity scale
+	OriginalGravityScale = GravityScale;
 }
 
 void UGravityCharacterMovementComponent::HandleGravityShift()
 {
 	if (!bIsFloating && !bIsDiving)
 	{
-		// Enter float mode
 		bIsFloating = true;
 		GravityScale = 0.f;
 		Velocity = FVector::ZeroVector;
@@ -28,8 +28,8 @@ void UGravityCharacterMovementComponent::ExitGravityMode()
 {
 	bIsFloating = false;
 	bIsDiving = false;
-	GravityScale = OriginalGravityScale; // Restore original gravity
-	SetMovementMode(MOVE_Falling); // Allow normal gravity behavior
+	GravityScale = OriginalGravityScale;
+	SetMovementMode(MOVE_Falling);
 }
 
 void UGravityCharacterMovementComponent::StartDive(const FVector& DiveDirection)
@@ -38,11 +38,9 @@ void UGravityCharacterMovementComponent::StartDive(const FVector& DiveDirection)
 	{
 		bIsFloating = false;
 		bIsDiving = true;
-
-		// Set initial dive velocity, adjust speed as needed
 		Velocity = DiveDirection.GetSafeNormal() * DiveSpeed;
-
 		SetMovementMode(MOVE_Falling);
+		DiveStartTime = GetWorld()->GetTimeSeconds();
 	}
 }
 
@@ -50,23 +48,26 @@ void UGravityCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iter
 {
 	if (bIsFloating)
 	{
-		Velocity = FVector::ZeroVector; // Stay perfectly floating
-		return; // Skip gravity physics entirely
+		Velocity = FVector::ZeroVector;
+		return;
 	}
-
 	if (bIsDiving)
 	{
-		// Constrain slight directional adjustments (future implementation)
-		const float GravityMagnitude = FMath::Abs(GetWorld()->GetGravityZ());
-		FVector GravityForce = DiveGravityDirection * GravityMagnitude * DiveGravityMultiplier;
+		float ElapsedTime = GetWorld()->GetTimeSeconds() - DiveStartTime;
+		if (ElapsedTime >= MaxDiveDuration)
+		{
+			ExitGravityMode();
+			return;
+		}
+		FVector GravityForce = DiveGravityDirection * GetWorld()->GetGravityZ() * DiveGravityMultiplier;
 		Velocity += GravityForce * deltaTime;
-
-		// Optional: Allow limited directional input adjustment here (future)
-
+		if (IsMovingOnGround())
+		{
+			ExitGravityMode();
+			return;
+		}
 		Super::PhysFalling(deltaTime, Iterations);
 		return;
 	}
-
-	// Standard falling physics
 	Super::PhysFalling(deltaTime, Iterations);
 }

@@ -30,15 +30,21 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gravity|Dive")
 	FVector DiveGravityDirection = FVector(0, 0, -1);
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gravity|Dive")
 	float DiveGravityMultiplier = 0.1f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gravity|Dive")
 	float DiveSpeed = 2000.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gravity|Dive")
+	float MaxDiveDuration = 2.f;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gravity|Dive")
+	float DiveStartTime = 0.f;
+
 	void HandleGravityShift(); // R1
-	void ExitGravityMode();    // L1
+	void ExitGravityMode(); // L1
 	void StartDive(const FVector& DiveDirection); // To be defined
 
 protected:
