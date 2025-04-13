@@ -74,6 +74,12 @@ void AProjectSkyRunnerCharacter::SetupPlayerInputComponent(UInputComponent* Play
 		{
 			EnhancedInputComponent->BindAction(GravityReturnAction, ETriggerEvent::Triggered, this, &AProjectSkyRunnerCharacter::GravityReturn);
 		}
+		
+		// Bind Gravity Dive
+		if (GravityDiveAction)
+		{
+			EnhancedInputComponent->BindAction(GravityDiveAction, ETriggerEvent::Triggered, this, &AProjectSkyRunnerCharacter::GravityDive);
+		}
 	}
 }
 
@@ -95,6 +101,13 @@ void AProjectSkyRunnerCharacter::GravityReturn()
 	}
 }
 
+void AProjectSkyRunnerCharacter::GravityDive()
+{
+	if (auto GravityComp = Cast<UGravityCharacterMovementComponent>(GetCharacterMovement()))
+	{
+		GravityComp->StartDive(GetFollowCamera()->GetForwardVector());
+	}
+}
 
 void AProjectSkyRunnerCharacter::Move(const FInputActionValue& Value)
 {

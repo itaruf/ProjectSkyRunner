@@ -52,9 +52,13 @@ class AProjectSkyRunnerCharacter : public ACharacter, public IDamageDealerProvid
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* GravityReturnAction;
 
+	/** Gravity Dive Input Action (trigger dive movement) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* GravityDiveAction;
+	
 	void GravityShift();
 	void GravityReturn();
-
+	void GravityDive();
 
 public:
 	AProjectSkyRunnerCharacter(const FObjectInitializer& ObjectInitializer);
