@@ -44,9 +44,17 @@ class AProjectSkyRunnerCharacter : public ACharacter, public IDamageDealerProvid
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
-	/** Gravity Toggle Input Action */
+	/** Gravity Shift Input Action (enter/aim/dive) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* GravityToggleAction;
+	UInputAction* GravityShiftAction;
+
+	/** Gravity Return Input Action (exit to normal) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* GravityReturnAction;
+
+	void GravityShift();
+	void GravityReturn();
+
 
 public:
 	AProjectSkyRunnerCharacter(const FObjectInitializer& ObjectInitializer);
@@ -57,9 +65,6 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-
-	/** Called to toggle gravity mode */
-	void ToggleGravityMode();
 
 protected:
 	// APawn interface

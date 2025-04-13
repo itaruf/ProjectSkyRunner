@@ -57,19 +57,44 @@ void AProjectSkyRunnerCharacter::SetupPlayerInputComponent(UInputComponent* Play
 {
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
+		// Existing input bindings
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AProjectSkyRunnerCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AProjectSkyRunnerCharacter::Look);
 
-		// Bind Gravity toggle action
-		if (GravityToggleAction)
+		// New Gravity bindings clearly matching Gravity Rush
+		if (GravityShiftAction)
 		{
-			EnhancedInputComponent->BindAction(GravityToggleAction, ETriggerEvent::Triggered, this, &AProjectSkyRunnerCharacter::ToggleGravityMode);
+			EnhancedInputComponent->BindAction(GravityShiftAction, ETriggerEvent::Triggered, this, &AProjectSkyRunnerCharacter::GravityShift);
+		}
+
+		if (GravityReturnAction)
+		{
+			EnhancedInputComponent->BindAction(GravityReturnAction, ETriggerEvent::Triggered, this, &AProjectSkyRunnerCharacter::GravityReturn);
 		}
 	}
 }
+
+// Shift gravity (R1)
+void AProjectSkyRunnerCharacter::GravityShift()
+{
+	if (auto GravityComp = Cast<UGravityCharacterMovementComponent>(GetCharacterMovement()))
+	{
+		GravityComp->HandleGravityShift();
+	}
+}
+
+// Return gravity immediately (L1)
+void AProjectSkyRunnerCharacter::GravityReturn()
+{
+	if (auto GravityComp = Cast<UGravityCharacterMovementComponent>(GetCharacterMovement()))
+	{
+		GravityComp->ExitGravityMode();
+	}
+}
+
 
 void AProjectSkyRunnerCharacter::Move(const FInputActionValue& Value)
 {
@@ -96,14 +121,6 @@ void AProjectSkyRunnerCharacter::Look(const FInputActionValue& Value)
 	{
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
-	}
-}
-
-void AProjectSkyRunnerCharacter::ToggleGravityMode()
-{
-	if (UGravityCharacterMovementComponent* GravityComp = Cast<UGravityCharacterMovementComponent>(GetCharacterMovement()))
-	{
-		GravityComp->ToggleGravityMode();
 	}
 }
 
