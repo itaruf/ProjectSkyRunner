@@ -16,13 +16,22 @@ void UGravityCharacterMovementComponent::BeginPlay()
 
 void UGravityCharacterMovementComponent::HandleGravityShift()
 {
-	if (!bIsFloating && !bIsDiving)
+	if (bIsDiving)
+	{
+		bIsDiving = false;
+		bIsFloating = true;
+		Velocity = FVector::ZeroVector;
+		GravityScale = 0.f;
+		SetMovementMode(MOVE_Falling);
+		return;
+	}
+
+	if (!bIsFloating)
 	{
 		if (CharacterOwner && CharacterOwner->GetMovementComponent()->IsMovingOnGround())
 		{
 			FVector Impulse = FVector(0.f, 0.f, LiftImpulse);
 			AddImpulse(Impulse);
-
 			Velocity.Z = LiftImpulse;
 		}
 		bIsFloating = true;
