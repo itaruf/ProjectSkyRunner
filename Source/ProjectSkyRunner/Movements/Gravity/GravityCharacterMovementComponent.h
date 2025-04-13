@@ -22,7 +22,6 @@ public:
 	// Original gravity scale to restore after toggling gravity mode off
 	float OriginalGravityScale;
 
-	// CustomGravityCharacterMovementComponent.h (additions)
 	bool bIsFloating;
 	bool bIsDiving;
 

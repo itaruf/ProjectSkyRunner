@@ -24,15 +24,6 @@ void UGravityCharacterMovementComponent::HandleGravityShift()
 		Velocity = FVector::ZeroVector;
 		SetMovementMode(MOVE_Falling);
 	}
-	else if (bIsFloating && !bIsDiving)
-	{
-		// Begin diving towards aim direction (camera forward vector)
-		if (CharacterOwner && CharacterOwner->Controller)
-		{
-			bIsDiving = true;
-			bIsFloating = false;
-		}
-	}
 }
 
 void UGravityCharacterMovementComponent::ExitGravityMode()
