@@ -52,8 +52,10 @@ private:
 	//
 	FVector LastFrameGravity = FVector::ZeroVector;
 	//
+	UPROPERTY()
 	ACharacter* GravityCharacter = nullptr;
 	//
+	UPROPERTY()
 	UGravityCharacterMovementComponent* GravityCharacterMovement = nullptr;
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
