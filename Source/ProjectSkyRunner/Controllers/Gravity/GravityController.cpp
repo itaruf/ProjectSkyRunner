@@ -83,15 +83,15 @@ void AGravityController::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	{
 		if (GravityShiftAction)
 		{
-			EnhancedInputComponent->BindAction(GravityShiftAction, ETriggerEvent::Triggered, this, &AGravityController::GravityShift);
+			EnhancedInputComponent->BindAction(GravityShiftAction, ETriggerEvent::Started, this, &AGravityController::GravityShift);
 		}
 		if (GravityReturnAction)
 		{
-			EnhancedInputComponent->BindAction(GravityReturnAction, ETriggerEvent::Triggered, this, &AGravityController::GravityReturn);
+			EnhancedInputComponent->BindAction(GravityReturnAction, ETriggerEvent::Started, this, &AGravityController::GravityReturn);
 		}
 		if (GravityDiveAction)
 		{
-			EnhancedInputComponent->BindAction(GravityDiveAction, ETriggerEvent::Triggered, this, &AGravityController::GravityDive);
+			EnhancedInputComponent->BindAction(GravityDiveAction, ETriggerEvent::Started, this, &AGravityController::GravityDive);
 		}
 	}
 }
@@ -131,4 +131,3 @@ void AGravityController::GravityDive()
 		}
 	}
 }
-
