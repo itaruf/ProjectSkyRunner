@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/DamageDealerComponent.h"
+#include "Controllers/Interfaces/ControllerInterface.h"
 #include "GameFramework/SpringArmComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -60,17 +61,12 @@ void AProjectSkyRunnerCharacter::SetupPlayerInputComponent(UInputComponent* Play
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		//EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AProjectSkyRunnerCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AProjectSkyRunnerCharacter::Look);
-		if (GravityShiftAction)
+	}
+	if (Controller)
+	{
+		if (IControllerInterface* ControllerInterface = Cast<IControllerInterface>(Controller))
 		{
-			EnhancedInputComponent->BindAction(GravityShiftAction, ETriggerEvent::Triggered, this, &AProjectSkyRunnerCharacter::GravityShift);
-		}
-		if (GravityReturnAction)
-		{
-			EnhancedInputComponent->BindAction(GravityReturnAction, ETriggerEvent::Triggered, this, &AProjectSkyRunnerCharacter::GravityReturn);
-		}
-		if (GravityDiveAction)
-		{
-			EnhancedInputComponent->BindAction(GravityDiveAction, ETriggerEvent::Triggered, this, &AProjectSkyRunnerCharacter::GravityDive);
+			ControllerInterface->SetupPlayerInputComponent(PlayerInputComponent);
 		}
 	}
 }
@@ -101,30 +97,6 @@ void AProjectSkyRunnerCharacter::Look(const FInputActionValue& Value)
 	{
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
-	}
-}
-
-void AProjectSkyRunnerCharacter::GravityShift()
-{
-	if (auto GravityComp = Cast<UGravityCharacterMovementComponent>(GetCharacterMovement()))
-	{
-		GravityComp->HandleGravityShift();
-	}
-}
-
-void AProjectSkyRunnerCharacter::GravityReturn()
-{
-	if (auto GravityComp = Cast<UGravityCharacterMovementComponent>(GetCharacterMovement()))
-	{
-		GravityComp->ExitGravityMode();
-	}
-}
-
-void AProjectSkyRunnerCharacter::GravityDive()
-{
-	if (auto GravityComp = Cast<UGravityCharacterMovementComponent>(GetCharacterMovement()))
-	{
-		GravityComp->StartDive(GetFollowCamera()->GetForwardVector());
 	}
 }
 
