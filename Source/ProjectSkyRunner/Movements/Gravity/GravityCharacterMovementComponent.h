@@ -40,19 +40,10 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gravity|Dive")
 	float DiveStartTime = 0.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gravity|Landing")
-	float FlatSurfaceThreshold = 0.85f;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Gravity|Landing")
 	FVector LastImpactNormal;
-
-	UFUNCTION()
-	void OnCharacterHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-	void HandleGravityShift();
-	void ExitGravityMode();
-	void StartDive(const FVector& DiveDirection);
+	
 	void OnLandedInternal(const FHitResult& Hit);
 protected:
 	virtual void BeginPlay() override;
