@@ -20,8 +20,9 @@ public:
 private:
 	TArray<TSharedPtr<FSnapshotListEntry>> SnapshotList;
 	TSharedPtr<SListView<TSharedPtr<FSnapshotListEntry>>> SnapshotListView;
+	FText SnapshotNameText;
 
-	FReply OnSaveSnapshotClicked() const;
+	FReply OnSaveSnapshotClicked();
 	FReply OnRefreshSnapshotListClicked();
 
 	void RebuildSnapshotList();
