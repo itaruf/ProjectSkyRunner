@@ -241,6 +241,15 @@ TSharedRef<ITableRow> SSceneSnapshotHistoryWidget::OnGenerateRow(
 	// Use the pre‐built brush on the entry
 	const TSharedPtr<FSlateBrush>& Brush = InItem->ThumbnailBrush;
 
+	// --- crop the snapshot name to a max length, add "..." if it was too long
+	FString FullName = InItem->SnapshotName.ToString();
+	const int32 MaxChars = 24; // tweak to fit your layout
+	FString DisplayName = FullName;
+	if (FullName.Len() > MaxChars)
+	{
+		DisplayName = FullName.Left(MaxChars) + TEXT("…");
+	}
+
 	return SNew(STableRow<TSharedPtr<FSnapshotListEntry>>, OwnerTable)
 		[
 			SNew(SHorizontalBox)
@@ -258,10 +267,15 @@ TSharedRef<ITableRow> SSceneSnapshotHistoryWidget::OnGenerateRow(
 			]
 
 			// Name
-			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(8, 0)
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			.Padding(8, 0)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromName(InItem->SnapshotName))
+				                .Text(FText::FromString(DisplayName))
+						// optional: full name on hover
+				                .ToolTipText(FText::FromString(FullName))
 			]
 
 			// Timestamp
