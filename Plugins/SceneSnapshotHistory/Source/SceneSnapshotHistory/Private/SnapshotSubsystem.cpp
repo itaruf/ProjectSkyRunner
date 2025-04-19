@@ -50,7 +50,7 @@ void USnapshotSubsystem::SaveSnapshot(FName SnapshotName, const TArray<AActor*>&
 
 void USnapshotSubsystem::SaveSnapshotAsync(FName SnapshotName)
 {
-	if (!GetWorld()) 
+	if (!GetWorld())
 	{
 		return;
 	}
@@ -98,10 +98,27 @@ void USnapshotSubsystem::RestoreSnapshot(FName SnapshotName, FDateTime Timestamp
 
 void USnapshotSubsystem::DeleteSnapshot(FName SnapshotName, FDateTime Timestamp)
 {
+	// Collect any thumbnail paths for the snapshots we're about to remove
+	TArray<FString> PathsToDelete;
+	for (const FSceneSnapshot& S : SavedSnapshots)
+	{
+		if (S.SnapshotName == SnapshotName && S.Timestamp == Timestamp)
+		{
+			PathsToDelete.Add(S.ThumbnailPath);
+		}
+	}
+
+	// Remove the snapshots from our in‑memory array
 	SavedSnapshots.RemoveAll([&](auto const& S)
 	{
 		return S.SnapshotName == SnapshotName && S.Timestamp == Timestamp;
 	});
+
+	// Delete the thumbnail PNGs from disk
+	for (const FString& Path : PathsToDelete)
+	{
+		IFileManager::Get().Delete(*Path, /*bRequireExists=*/false, /*bEvenReadOnly=*/true);
+	}
 }
 
 const TArray<FSceneSnapshot>& USnapshotSubsystem::GetSnapshots() const
