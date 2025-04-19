@@ -49,10 +49,18 @@ FReply SSceneSnapshotHistoryWidget::OnSaveSnapshotClicked() const
 		if (USnapshotSubsystem* Subsystem = World->GetSubsystem<USnapshotSubsystem>())
 		{
 			Subsystem->SaveSnapshot(FName(TEXT("NewSnapshot")));
+
+			// Auto-refresh the list
+			const_cast<SSceneSnapshotHistoryWidget*>(this)->RebuildSnapshotList();
+			if (SnapshotListView.IsValid())
+			{
+				SnapshotListView->RequestListRefresh();
+			}
 		}
 	}
 	return FReply::Handled();
 }
+
 
 FReply SSceneSnapshotHistoryWidget::OnRefreshSnapshotListClicked()
 {
