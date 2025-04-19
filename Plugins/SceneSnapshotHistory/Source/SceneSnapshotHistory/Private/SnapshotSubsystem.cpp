@@ -1,6 +1,7 @@
 ﻿#include "SnapshotSubsystem.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "Editor.h"
 
 void USnapshotSubsystem::Initialize(FSubsystemCollectionBase& Collection) {}
 void USnapshotSubsystem::Deinitialize() {}
@@ -59,6 +60,12 @@ void USnapshotSubsystem::RestoreSnapshot(FName SnapshotName) {
                 AActor* Actor = *It;
                 Actor->SetActorTransform(Data.ActorTransform);
                 Actor->SetActorHiddenInGame(!Data.bVisible);
+
+                if (GEditor && Actor->IsSelectedInEditor())
+                {
+                    GEditor->NoteSelectionChange();
+                }
+
                 break;
             }
         }
