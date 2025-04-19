@@ -5,7 +5,10 @@
 class SSceneSnapshotHistoryWidget : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SSceneSnapshotHistoryWidget) {}
+	SLATE_BEGIN_ARGS(SSceneSnapshotHistoryWidget)
+		{
+		}
+
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
@@ -13,5 +16,5 @@ public:
 private:
 	FReply OnSaveSnapshotClicked() const;
 	FReply OnRestoreSnapshotClicked_Internal() const;
-	void OnRestoreSnapshot(FName SnapshotName) const;
+	void OnRestoreSnapshot(FName SnapshotName, FDateTime Timestamp) const;
 };

@@ -46,20 +46,21 @@ FReply SSceneSnapshotHistoryWidget::OnSaveSnapshotClicked() const
 
 FReply SSceneSnapshotHistoryWidget::OnRestoreSnapshotClicked_Internal() const
 {
-	OnRestoreSnapshot(FName(TEXT("NewSnapshot")));
+	OnRestoreSnapshot(FName(TEXT("NewSnapshot")), FDateTime());
 	return FReply::Handled();
 }
 
-void SSceneSnapshotHistoryWidget::OnRestoreSnapshot(FName SnapshotName) const
+void SSceneSnapshotHistoryWidget::OnRestoreSnapshot(FName SnapshotName, FDateTime Timestamp) const
 {
 	if (GEditor)
 	{
 		UWorld* World = GEditor->GetEditorWorldContext().World();
 		if (USnapshotSubsystem* Subsystem = World->GetSubsystem<USnapshotSubsystem>())
 		{
-			Subsystem->RestoreSnapshot(SnapshotName);
+			Subsystem->RestoreSnapshot(SnapshotName, Timestamp);
 		}
 	}
 }
+
 
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION

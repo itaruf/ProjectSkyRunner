@@ -11,11 +11,11 @@ static const FName SceneSnapshotHistoryTabName("SceneSnapshotHistory");
 void FSceneSnapshotHistoryEditorModule::StartupModule()
 {
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
-		SceneSnapshotHistoryTabName,
-		FOnSpawnTab::CreateStatic(&FSceneSnapshotHistoryEditorModule::OnSpawnPluginTab)
-	)
-	.SetDisplayName(LOCTEXT("TabTitle", "Scene Snapshots"))
-	.SetMenuType(ETabSpawnerMenuType::Hidden);
+		                        SceneSnapshotHistoryTabName,
+		                        FOnSpawnTab::CreateStatic(&FSceneSnapshotHistoryEditorModule::OnSpawnPluginTab)
+	                        )
+	                        .SetDisplayName(LOCTEXT("TabTitle", "Scene Snapshots"))
+	                        .SetMenuType(ETabSpawnerMenuType::Hidden);
 
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 

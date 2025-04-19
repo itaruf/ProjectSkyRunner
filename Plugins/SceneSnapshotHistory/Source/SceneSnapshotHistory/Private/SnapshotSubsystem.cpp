@@ -3,82 +3,87 @@
 #include "EngineUtils.h"
 #include "Editor.h"
 
-void USnapshotSubsystem::Initialize(FSubsystemCollectionBase& Collection) {}
-void USnapshotSubsystem::Deinitialize() {}
+void USnapshotSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+}
+
+void USnapshotSubsystem::Deinitialize()
+{
+}
 
 void USnapshotSubsystem::SaveSnapshot(FName SnapshotName)
 {
-    // Check if snapshot with this name already exists
-    for (FSceneSnapshot& Existing : SavedSnapshots)
-    {
-        if (Existing.SnapshotName == SnapshotName)
-        {
-            Existing.ActorStates.Empty();
-            Existing.Timestamp = FDateTime::Now();
+	FSceneSnapshot Snap;
+	Snap.SnapshotName = SnapshotName;
+	Snap.Timestamp = FDateTime::Now();
 
-            UWorld* World = GetWorld();
-            for (TActorIterator<AActor> It(World); It; ++It)
-            {
-                AActor* Actor = *It;
-                FSceneSnapshotActorData Data;
-                Data.ActorName = Actor->GetFName();
-                Data.ActorTransform = Actor->GetActorTransform();
-                Data.bVisible = !Actor->IsHidden();
-                Existing.ActorStates.Add(Data);
-            }
-            return;
-        }
-    }
+	UWorld* World = GetWorld();
+	for (TActorIterator<AActor> It(World); It; ++It)
+	{
+		AActor* Actor = *It;
+		FSceneSnapshotActorData Data;
+		Data.ActorName = Actor->GetFName();
+		Data.ActorTransform = Actor->GetActorTransform();
+		Data.bVisible = !Actor->IsHidden();
+		Snap.ActorStates.Add(Data);
+	}
 
-    // No existing snapshot found, create new one
-    FSceneSnapshot Snap;
-    Snap.SnapshotName = SnapshotName;
-    Snap.Timestamp = FDateTime::Now();
-
-    UWorld* World = GetWorld();
-    for (TActorIterator<AActor> It(World); It; ++It)
-    {
-        AActor* Actor = *It;
-        FSceneSnapshotActorData Data;
-        Data.ActorName = Actor->GetFName();
-        Data.ActorTransform = Actor->GetActorTransform();
-        Data.bVisible = !Actor->IsHidden();
-        Snap.ActorStates.Add(Data);
-    }
-
-    SavedSnapshots.Add(Snap);
+	SavedSnapshots.Add(Snap);
 }
 
-void USnapshotSubsystem::RestoreSnapshot(FName SnapshotName) {
-    const FSceneSnapshot* Snap = FindSnapshot(SnapshotName);
-    if (!Snap) return;
+void USnapshotSubsystem::RestoreSnapshot(FName SnapshotName, FDateTime Timestamp)
+{
+	const FSceneSnapshot* Snap = FindSnapshot(SnapshotName, Timestamp);
+	if (!Snap) return;
 
-    UWorld* World = GetWorld();
-    for (const FSceneSnapshotActorData& Data : Snap->ActorStates) {
-        for (TActorIterator<AActor> It(World); It; ++It) {
-            if (It->GetFName() == Data.ActorName) {
-                AActor* Actor = *It;
-                Actor->SetActorTransform(Data.ActorTransform);
-                Actor->SetActorHiddenInGame(!Data.bVisible);
+	UWorld* World = GetWorld();
+	for (const FSceneSnapshotActorData& Data : Snap->ActorStates)
+	{
+		for (TActorIterator<AActor> It(World); It; ++It)
+		{
+			if (It->GetFName() == Data.ActorName)
+			{
+				AActor* Actor = *It;
+				Actor->SetActorTransform(Data.ActorTransform);
+				Actor->SetActorHiddenInGame(!Data.bVisible);
 
-                if (GEditor && Actor->IsSelectedInEditor())
-                {
-                    GEditor->NoteSelectionChange();
-                }
+				if (GEditor && Actor->IsSelectedInEditor())
+				{
+					GEditor->NoteSelectionChange();
+				}
 
-                break;
-            }
-        }
-    }
+				break;
+			}
+		}
+	}
 }
 
-const FSceneSnapshot* USnapshotSubsystem::FindSnapshot(FName SnapshotName) const {
-    for (const FSceneSnapshot& S : SavedSnapshots) {
-        if (S.SnapshotName == SnapshotName) return &S;
-    }
-    return nullptr;
+void USnapshotSubsystem::DeleteSnapshot(FName SnapshotName, FDateTime Timestamp)
+{
+	for (int32 i = 0; i < SavedSnapshots.Num(); ++i)
+	{
+		const FSceneSnapshot& S = SavedSnapshots[i];
+		if (S.SnapshotName == SnapshotName && S.Timestamp == Timestamp)
+		{
+			SavedSnapshots.RemoveAt(i);
+			break;
+		}
+	}
 }
 
-const TArray<FSceneSnapshot>& USnapshotSubsystem::GetSnapshots() const {
-    return SavedSnapshots;
+const FSceneSnapshot* USnapshotSubsystem::FindSnapshot(FName SnapshotName, FDateTime Timestamp) const
+{
+	for (const FSceneSnapshot& S : SavedSnapshots)
+	{
+		if (S.SnapshotName == SnapshotName && S.Timestamp == Timestamp)
+		{
+			return &S;
+		}
+	}
+	return nullptr;
+}
+
+const TArray<FSceneSnapshot>& USnapshotSubsystem::GetSnapshots() const
+{
+	return SavedSnapshots;
 }

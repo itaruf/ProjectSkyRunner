@@ -4,7 +4,8 @@
 #include "SnapshotSubsystem.generated.h"
 
 USTRUCT()
-struct FSceneSnapshotActorData {
+struct FSceneSnapshotActorData
+{
 	GENERATED_BODY()
 
 	UPROPERTY()
@@ -18,7 +19,8 @@ struct FSceneSnapshotActorData {
 };
 
 USTRUCT()
-struct FSceneSnapshot {
+struct FSceneSnapshot
+{
 	GENERATED_BODY()
 
 	UPROPERTY()
@@ -32,7 +34,8 @@ struct FSceneSnapshot {
 };
 
 UCLASS()
-class SCENESNAPSHOTHISTORY_API USnapshotSubsystem : public UWorldSubsystem {
+class SCENESNAPSHOTHISTORY_API USnapshotSubsystem : public UWorldSubsystem
+{
 	GENERATED_BODY()
 
 public:
@@ -43,11 +46,14 @@ public:
 	void SaveSnapshot(FName SnapshotName);
 
 	UFUNCTION(CallInEditor, Category="Snapshots")
-	void RestoreSnapshot(FName SnapshotName);
+	void RestoreSnapshot(FName SnapshotName, FDateTime Timestamp);
+
+	UFUNCTION(CallInEditor, Category="Snapshots")
+	void DeleteSnapshot(FName SnapshotName, FDateTime Timestamp);
 
 	const TArray<FSceneSnapshot>& GetSnapshots() const;
 
 private:
 	TArray<FSceneSnapshot> SavedSnapshots;
-	const FSceneSnapshot* FindSnapshot(FName SnapshotName) const;
+	const FSceneSnapshot* FindSnapshot(FName SnapshotName, FDateTime Timestamp) const;
 };
