@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "SnapshotSubsystem.generated.h"
@@ -31,6 +32,10 @@ struct FSceneSnapshot
 
 	UPROPERTY()
 	TArray<FSceneSnapshotActorData> ActorStates;
+
+	/** Absolute path to the saved thumbnail PNG */
+	UPROPERTY()
+	FString ThumbnailPath;
 };
 
 UCLASS()
@@ -39,23 +44,38 @@ class SCENESNAPSHOTHISTORY_API USnapshotSubsystem : public UWorldSubsystem
 	GENERATED_BODY()
 
 public:
+	// Required overrides
 	void Initialize(FSubsystemCollectionBase& Collection) override;
 	void Deinitialize() override;
 
-	UFUNCTION(CallInEditor, Category="Snapshots")
+	/** Save entire scene */
+	UFUNCTION(CallInEditor, Category = "Snapshots")
 	void SaveSnapshot(FName SnapshotName);
 
+	/** Save only selected actors */
 	void SaveSnapshot(FName SnapshotName, const TArray<AActor*>& ActorsToSave);
 
-	UFUNCTION(CallInEditor, Category="Snapshots")
+	/** Restore by name + timestamp */
+	UFUNCTION(CallInEditor, Category = "Snapshots")
 	void RestoreSnapshot(FName SnapshotName, FDateTime Timestamp);
 
-	UFUNCTION(CallInEditor, Category="Snapshots")
+	/** Delete a single snapshot */
+	UFUNCTION(CallInEditor, Category = "Snapshots")
 	void DeleteSnapshot(FName SnapshotName, FDateTime Timestamp);
 
+	/** All snapshots in memory */
 	const TArray<FSceneSnapshot>& GetSnapshots() const;
 
 private:
+	/** In‑memory storage */
 	TArray<FSceneSnapshot> SavedSnapshots;
+
+	/** Helper to find one */
 	const FSceneSnapshot* FindSnapshot(FName SnapshotName, FDateTime Timestamp) const;
+
+	/** 
+	 * Captures the current viewport into a PNG under Intermediate/SnapshotPreviews
+	 * and returns the absolute filename.
+	 */
+	FString SaveThumbnailForSnapshot(FName SnapshotName, FDateTime Timestamp);
 };

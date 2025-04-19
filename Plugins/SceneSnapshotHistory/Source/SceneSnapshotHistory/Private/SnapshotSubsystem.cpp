@@ -2,6 +2,9 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Editor.h"
+#include "Misc/Paths.h"
+#include "HAL/FileManager.h"
+#include "Modules/ModuleManager.h"
 
 void USnapshotSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -13,26 +16,17 @@ void USnapshotSubsystem::Deinitialize()
 
 void USnapshotSubsystem::SaveSnapshot(FName SnapshotName)
 {
-	FSceneSnapshot Snap;
-	Snap.SnapshotName = SnapshotName;
-	Snap.Timestamp = FDateTime::Now();
-
-	UWorld* World = GetWorld();
-	for (TActorIterator<AActor> It(World); It; ++It)
+	TArray<AActor*> AllActors;
+	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
 	{
-		AActor* Actor = *It;
-		FSceneSnapshotActorData Data;
-		Data.ActorName = Actor->GetFName();
-		Data.ActorTransform = Actor->GetActorTransform();
-		Data.bVisible = !Actor->IsHidden();
-		Snap.ActorStates.Add(Data);
+		AllActors.Add(*It);
 	}
-
-	SavedSnapshots.Add(Snap);
+	return SaveSnapshot(SnapshotName, AllActors);
 }
 
 void USnapshotSubsystem::SaveSnapshot(FName SnapshotName, const TArray<AActor*>& ActorsToSave)
 {
+	// Build the snapshot data
 	FSceneSnapshot Snap;
 	Snap.SnapshotName = SnapshotName;
 	Snap.Timestamp = FDateTime::Now();
@@ -40,39 +34,39 @@ void USnapshotSubsystem::SaveSnapshot(FName SnapshotName, const TArray<AActor*>&
 	for (AActor* Actor : ActorsToSave)
 	{
 		if (!IsValid(Actor)) continue;
-
 		FSceneSnapshotActorData Data;
 		Data.ActorName = Actor->GetFName();
 		Data.ActorTransform = Actor->GetActorTransform();
 		Data.bVisible = !Actor->IsHidden();
-		Snap.ActorStates.Add(Data);
+		Snap.ActorStates.Add(MoveTemp(Data));
 	}
 
-	SavedSnapshots.Add(Snap);
-}
+	// Capture & record a thumbnail
+	Snap.ThumbnailPath = SaveThumbnailForSnapshot(SnapshotName, Snap.Timestamp);
 
+	// Store it
+	SavedSnapshots.Add(MoveTemp(Snap));
+}
 
 void USnapshotSubsystem::RestoreSnapshot(FName SnapshotName, FDateTime Timestamp)
 {
-	const FSceneSnapshot* Snap = FindSnapshot(SnapshotName, Timestamp);
-	if (!Snap) return;
+	const FSceneSnapshot* Found = FindSnapshot(SnapshotName, Timestamp);
+	if (!Found) return;
 
 	UWorld* World = GetWorld();
-	for (const FSceneSnapshotActorData& Data : Snap->ActorStates)
+	for (const auto& Data : Found->ActorStates)
 	{
 		for (TActorIterator<AActor> It(World); It; ++It)
 		{
-			if (It->GetFName() == Data.ActorName)
+			AActor* Actor = *It;
+			if (Actor->GetFName() == Data.ActorName)
 			{
-				AActor* Actor = *It;
 				Actor->SetActorTransform(Data.ActorTransform);
 				Actor->SetActorHiddenInGame(!Data.bVisible);
-
-				if (GEditor && Actor->IsSelectedInEditor())
+				if (GEditor)
 				{
 					GEditor->NoteSelectionChange();
 				}
-
 				break;
 			}
 		}
@@ -81,20 +75,20 @@ void USnapshotSubsystem::RestoreSnapshot(FName SnapshotName, FDateTime Timestamp
 
 void USnapshotSubsystem::DeleteSnapshot(FName SnapshotName, FDateTime Timestamp)
 {
-	for (int32 i = 0; i < SavedSnapshots.Num(); ++i)
+	SavedSnapshots.RemoveAll([&](auto const& S)
 	{
-		const FSceneSnapshot& S = SavedSnapshots[i];
-		if (S.SnapshotName == SnapshotName && S.Timestamp == Timestamp)
-		{
-			SavedSnapshots.RemoveAt(i);
-			break;
-		}
-	}
+		return S.SnapshotName == SnapshotName && S.Timestamp == Timestamp;
+	});
+}
+
+const TArray<FSceneSnapshot>& USnapshotSubsystem::GetSnapshots() const
+{
+	return SavedSnapshots;
 }
 
 const FSceneSnapshot* USnapshotSubsystem::FindSnapshot(FName SnapshotName, FDateTime Timestamp) const
 {
-	for (const FSceneSnapshot& S : SavedSnapshots)
+	for (auto const& S : SavedSnapshots)
 	{
 		if (S.SnapshotName == SnapshotName && S.Timestamp == Timestamp)
 		{
@@ -104,7 +98,21 @@ const FSceneSnapshot* USnapshotSubsystem::FindSnapshot(FName SnapshotName, FDate
 	return nullptr;
 }
 
-const TArray<FSceneSnapshot>& USnapshotSubsystem::GetSnapshots() const
+FString USnapshotSubsystem::SaveThumbnailForSnapshot(FName SnapshotName, FDateTime Timestamp)
 {
-	return SavedSnapshots;
+	if (!GEditor) return TEXT("");
+
+	// Ensure the folder exists
+	FString Folder = FPaths::Combine(FPaths::ProjectIntermediateDir(), TEXT("SnapshotPreviews"));
+	IFileManager::Get().MakeDirectory(*Folder, true);
+
+	// Build a filename
+	FString TimeStr = Timestamp.ToString().Replace(TEXT(":"), TEXT("-"));
+	FString FileName = FString::Printf(TEXT("%s/%s_%s.png"),
+	                                   *Folder, *SnapshotName.ToString(), *TimeStr);
+
+	// Request a high‑res screenshot next frame
+	FScreenshotRequest::RequestScreenshot(FileName, false, false);
+
+	return FileName;
 }
