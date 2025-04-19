@@ -11,6 +11,7 @@ public class SceneSnapshotHistoryEditor : ModuleRules
 			{
 				"Core",
 				"SlateCore",
+				"InputCore" 
 			}
 		);
 

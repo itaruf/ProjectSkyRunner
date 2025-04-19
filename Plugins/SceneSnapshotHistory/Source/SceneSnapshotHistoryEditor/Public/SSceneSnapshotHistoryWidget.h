@@ -1,20 +1,33 @@
 ﻿#pragma once
 #include "Widgets/SCompoundWidget.h"
 #include "SnapshotSubsystem.h"
+#include "Widgets/Views/SListView.h"
+
+struct FSnapshotListEntry
+{
+	FName SnapshotName;
+	FDateTime Timestamp;
+};
 
 class SSceneSnapshotHistoryWidget : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SSceneSnapshotHistoryWidget)
-		{
-		}
-
+	SLATE_BEGIN_ARGS(SSceneSnapshotHistoryWidget) {}
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
 
 private:
+	TArray<TSharedPtr<FSnapshotListEntry>> SnapshotList;
+	TSharedPtr<SListView<TSharedPtr<FSnapshotListEntry>>> SnapshotListView;
+
 	FReply OnSaveSnapshotClicked() const;
-	FReply OnRestoreSnapshotClicked_Internal() const;
+	FReply OnRefreshSnapshotListClicked();
+
+	void RebuildSnapshotList();
+
+	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FSnapshotListEntry> InItem, const TSharedRef<STableViewBase>& OwnerTable);
+
 	void OnRestoreSnapshot(FName SnapshotName, FDateTime Timestamp) const;
+	void OnDeleteSnapshot(FName SnapshotName, FDateTime Timestamp);
 };
