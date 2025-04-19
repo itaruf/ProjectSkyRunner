@@ -5,13 +5,38 @@
 void USnapshotSubsystem::Initialize(FSubsystemCollectionBase& Collection) {}
 void USnapshotSubsystem::Deinitialize() {}
 
-void USnapshotSubsystem::SaveSnapshot(FName SnapshotName) {
+void USnapshotSubsystem::SaveSnapshot(FName SnapshotName)
+{
+    // Check if snapshot with this name already exists
+    for (FSceneSnapshot& Existing : SavedSnapshots)
+    {
+        if (Existing.SnapshotName == SnapshotName)
+        {
+            Existing.ActorStates.Empty();
+            Existing.Timestamp = FDateTime::Now();
+
+            UWorld* World = GetWorld();
+            for (TActorIterator<AActor> It(World); It; ++It)
+            {
+                AActor* Actor = *It;
+                FSceneSnapshotActorData Data;
+                Data.ActorName = Actor->GetFName();
+                Data.ActorTransform = Actor->GetActorTransform();
+                Data.bVisible = !Actor->IsHidden();
+                Existing.ActorStates.Add(Data);
+            }
+            return;
+        }
+    }
+
+    // No existing snapshot found, create new one
     FSceneSnapshot Snap;
     Snap.SnapshotName = SnapshotName;
     Snap.Timestamp = FDateTime::Now();
-    UWorld* World = GetWorld();
 
-    for (TActorIterator<AActor> It(World); It; ++It) {
+    UWorld* World = GetWorld();
+    for (TActorIterator<AActor> It(World); It; ++It)
+    {
         AActor* Actor = *It;
         FSceneSnapshotActorData Data;
         Data.ActorName = Actor->GetFName();
