@@ -12,6 +12,7 @@
 #include "ImageUtils.h"
 #include "Editor.h"
 #include "Selection.h"
+#include "SnapshotSubsystem.h"
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
 
