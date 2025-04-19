@@ -2,6 +2,8 @@
 #include "SlateOptMacros.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Input/SComboBox.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Views/SListView.h"
 #include "Editor.h"
@@ -11,12 +13,12 @@ BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 void SSceneSnapshotHistoryWidget::Construct(const FArguments& InArgs)
 {
-	RebuildSnapshotList();
-
 	SnapshotModeOptions.Add(MakeShared<FString>(TEXT("Scene Mode")));
 	SnapshotModeOptions.Add(MakeShared<FString>(TEXT("Actor Mode")));
 	SelectedSnapshotMode = SnapshotModeOptions[0];
 	CurrentMode = ESnapshotCaptureMode::Scene;
+
+	RebuildSnapshotList();
 
 	ChildSlot
 	[
@@ -57,14 +59,7 @@ void SSceneSnapshotHistoryWidget::Construct(const FArguments& InArgs)
 				.OnSelectionChanged_Lambda([this](TSharedPtr<FString> NewSelection, ESelectInfo::Type)
 				{
 					SelectedSnapshotMode = NewSelection;
-					if (*NewSelection == TEXT("Actor Mode"))
-					{
-						CurrentMode = ESnapshotCaptureMode::Selected;
-					}
-					else
-					{
-						CurrentMode = ESnapshotCaptureMode::Scene;
-					}
+					CurrentMode = (*NewSelection == TEXT("Actor Mode")) ? ESnapshotCaptureMode::Selected : ESnapshotCaptureMode::Scene;
 				})
 				.InitiallySelectedItem(SnapshotModeOptions[0])
 				[
@@ -92,6 +87,18 @@ void SSceneSnapshotHistoryWidget::Construct(const FArguments& InArgs)
 			.OnClicked(this, &SSceneSnapshotHistoryWidget::OnRefreshSnapshotListClicked)
 		]
 
+		// Search Bar
+		+ SVerticalBox::Slot().AutoHeight().Padding(4)
+		[
+			SNew(SEditableTextBox)
+			.HintText(FText::FromString("Search snapshots..."))
+			.OnTextChanged_Lambda([this](const FText& NewText)
+			{
+				SearchText = NewText;
+				UpdateFilteredSnapshotList();
+			})
+		]
+
 		// Snapshot List
 		+ SVerticalBox::Slot().FillHeight(1.f).Padding(4)
 		[
@@ -103,7 +110,6 @@ void SSceneSnapshotHistoryWidget::Construct(const FArguments& InArgs)
 		]
 	];
 }
-
 
 FReply SSceneSnapshotHistoryWidget::OnSaveSnapshotClicked()
 {
@@ -124,31 +130,21 @@ FReply SSceneSnapshotHistoryWidget::OnSaveSnapshotClicked()
 				GEditor->GetSelectedActors()->GetSelectedObjects<AActor>(SelectedActors);
 				Subsystem->SaveSnapshot(FinalName, SelectedActors);
 			}
-
 			RebuildSnapshotList();
-			if (SnapshotListView.IsValid())
-			{
-				SnapshotListView->RequestListRefresh();
-			}
 		}
 	}
-
 	return FReply::Handled();
 }
 
 FReply SSceneSnapshotHistoryWidget::OnRefreshSnapshotListClicked()
 {
 	RebuildSnapshotList();
-	if (SnapshotListView.IsValid())
-	{
-		SnapshotListView->RequestListRefresh();
-	}
 	return FReply::Handled();
 }
 
 void SSceneSnapshotHistoryWidget::RebuildSnapshotList()
 {
-	SnapshotList.Empty();
+	AllSnapshotsRaw.Empty();
 
 	if (GEditor)
 	{
@@ -161,14 +157,37 @@ void SSceneSnapshotHistoryWidget::RebuildSnapshotList()
 				TSharedPtr<FSnapshotListEntry> Entry = MakeShared<FSnapshotListEntry>();
 				Entry->SnapshotName = Snap.SnapshotName;
 				Entry->Timestamp = Snap.Timestamp;
-				SnapshotList.Add(Entry);
+				AllSnapshotsRaw.Add(Entry);
 			}
 
-			SnapshotList.Sort([](const TSharedPtr<FSnapshotListEntry>& A, const TSharedPtr<FSnapshotListEntry>& B)
+			AllSnapshotsRaw.Sort([](const TSharedPtr<FSnapshotListEntry>& A, const TSharedPtr<FSnapshotListEntry>& B)
 			{
 				return A->Timestamp > B->Timestamp;
 			});
 		}
+	}
+
+	UpdateFilteredSnapshotList();
+}
+
+void SSceneSnapshotHistoryWidget::UpdateFilteredSnapshotList()
+{
+	const FString SearchLower = SearchText.ToString().ToLower();
+	TArray<TSharedPtr<FSnapshotListEntry>> Filtered;
+
+	for (const TSharedPtr<FSnapshotListEntry>& Entry : AllSnapshotsRaw)
+	{
+		if (Entry->SnapshotName.ToString().ToLower().Contains(SearchLower))
+		{
+			Filtered.Add(Entry);
+		}
+	}
+
+	SnapshotList = MoveTemp(Filtered);
+
+	if (SnapshotListView.IsValid())
+	{
+		SnapshotListView->RequestListRefresh();
 	}
 }
 
@@ -177,17 +196,14 @@ TSharedRef<ITableRow> SSceneSnapshotHistoryWidget::OnGenerateRow(TSharedPtr<FSna
 	return SNew(STableRow<TSharedPtr<FSnapshotListEntry>>, OwnerTable)
 		[
 			SNew(SHorizontalBox)
-
 			+ SHorizontalBox::Slot().AutoWidth().Padding(4)
 			[
 				SNew(STextBlock).Text(FText::FromName(InItem->SnapshotName))
 			]
-
 			+ SHorizontalBox::Slot().AutoWidth().Padding(4)
 			[
 				SNew(STextBlock).Text(FText::FromString(InItem->Timestamp.ToString()))
 			]
-
 			+ SHorizontalBox::Slot().AutoWidth().Padding(4)
 			[
 				SNew(SButton)
@@ -198,7 +214,6 @@ TSharedRef<ITableRow> SSceneSnapshotHistoryWidget::OnGenerateRow(TSharedPtr<FSna
 					return FReply::Handled();
 				})
 			]
-
 			+ SHorizontalBox::Slot().AutoWidth().Padding(4)
 			[
 				SNew(SButton)
@@ -207,7 +222,6 @@ TSharedRef<ITableRow> SSceneSnapshotHistoryWidget::OnGenerateRow(TSharedPtr<FSna
 				{
 					OnDeleteSnapshot(InItem->SnapshotName, InItem->Timestamp);
 					RebuildSnapshotList();
-					SnapshotListView->RequestListRefresh();
 					return FReply::Handled();
 				})
 			]

@@ -29,7 +29,10 @@ public:
 private:
 	TArray<TSharedPtr<FSnapshotListEntry>> SnapshotList;
 	TSharedPtr<SListView<TSharedPtr<FSnapshotListEntry>>> SnapshotListView;
+	TArray<TSharedPtr<FSnapshotListEntry>> AllSnapshotsRaw;
+
 	FText SnapshotNameText;
+	FText SearchText;
 
 	TArray<TSharedPtr<FString>> SnapshotModeOptions;
 	TSharedPtr<FString> SelectedSnapshotMode;
@@ -39,9 +42,9 @@ private:
 	FReply OnRefreshSnapshotListClicked();
 
 	void RebuildSnapshotList();
+	void UpdateFilteredSnapshotList();
 
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FSnapshotListEntry> InItem, const TSharedRef<STableViewBase>& OwnerTable);
-
 	void OnRestoreSnapshot(FName SnapshotName, FDateTime Timestamp) const;
 	void OnDeleteSnapshot(FName SnapshotName, FDateTime Timestamp);
 };
