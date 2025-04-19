@@ -9,10 +9,19 @@ struct FSnapshotListEntry
 	FDateTime Timestamp;
 };
 
+enum class ESnapshotCaptureMode : uint8
+{
+	Scene,
+	Selected
+};
+
 class SSceneSnapshotHistoryWidget : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SSceneSnapshotHistoryWidget) {}
+	SLATE_BEGIN_ARGS(SSceneSnapshotHistoryWidget)
+		{
+		}
+
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
@@ -21,6 +30,10 @@ private:
 	TArray<TSharedPtr<FSnapshotListEntry>> SnapshotList;
 	TSharedPtr<SListView<TSharedPtr<FSnapshotListEntry>>> SnapshotListView;
 	FText SnapshotNameText;
+
+	TArray<TSharedPtr<FString>> SnapshotModeOptions;
+	TSharedPtr<FString> SelectedSnapshotMode;
+	ESnapshotCaptureMode CurrentMode = ESnapshotCaptureMode::Scene;
 
 	FReply OnSaveSnapshotClicked();
 	FReply OnRefreshSnapshotListClicked();

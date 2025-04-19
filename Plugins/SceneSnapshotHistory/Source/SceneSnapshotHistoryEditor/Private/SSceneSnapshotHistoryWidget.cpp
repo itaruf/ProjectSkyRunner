@@ -5,12 +5,18 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Views/SListView.h"
 #include "Editor.h"
+#include "Selection.h"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 void SSceneSnapshotHistoryWidget::Construct(const FArguments& InArgs)
 {
 	RebuildSnapshotList();
+
+	SnapshotModeOptions.Add(MakeShared<FString>(TEXT("Scene Mode")));
+	SnapshotModeOptions.Add(MakeShared<FString>(TEXT("Actor Mode")));
+	SelectedSnapshotMode = SnapshotModeOptions[0];
+	CurrentMode = ESnapshotCaptureMode::Scene;
 
 	ChildSlot
 	[
@@ -29,6 +35,44 @@ void SSceneSnapshotHistoryWidget::Construct(const FArguments& InArgs)
 				SNew(SEditableTextBox)
 				.Text_Lambda([this]() { return SnapshotNameText; })
 				.OnTextChanged_Lambda([this](const FText& NewText) { SnapshotNameText = NewText; })
+			]
+		]
+
+		// Snapshot Mode Dropdown
+		+ SVerticalBox::Slot().AutoHeight().Padding(4)
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2)
+			[
+				SNew(STextBlock).Text(FText::FromString("Snapshot Mode:"))
+			]
+			+ SHorizontalBox::Slot().FillWidth(1.f).Padding(2)
+			[
+				SNew(SComboBox<TSharedPtr<FString>>)
+				.OptionsSource(&SnapshotModeOptions)
+				.OnGenerateWidget_Lambda([](TSharedPtr<FString> InItem)
+				{
+					return SNew(STextBlock).Text(FText::FromString(*InItem));
+				})
+				.OnSelectionChanged_Lambda([this](TSharedPtr<FString> NewSelection, ESelectInfo::Type)
+				{
+					SelectedSnapshotMode = NewSelection;
+					if (*NewSelection == TEXT("Actor Mode"))
+					{
+						CurrentMode = ESnapshotCaptureMode::Selected;
+					}
+					else
+					{
+						CurrentMode = ESnapshotCaptureMode::Scene;
+					}
+				})
+				.InitiallySelectedItem(SnapshotModeOptions[0])
+				[
+					SNew(STextBlock).Text_Lambda([this]()
+					{
+						return SelectedSnapshotMode.IsValid() ? FText::FromString(*SelectedSnapshotMode) : FText::FromString("Scene Mode");
+					})
+				]
 			]
 		]
 
@@ -70,7 +114,16 @@ FReply SSceneSnapshotHistoryWidget::OnSaveSnapshotClicked()
 		UWorld* World = GEditor->GetEditorWorldContext().World();
 		if (USnapshotSubsystem* Subsystem = World->GetSubsystem<USnapshotSubsystem>())
 		{
-			Subsystem->SaveSnapshot(FinalName);
+			if (CurrentMode == ESnapshotCaptureMode::Scene)
+			{
+				Subsystem->SaveSnapshot(FinalName);
+			}
+			else if (CurrentMode == ESnapshotCaptureMode::Selected)
+			{
+				TArray<AActor*> SelectedActors;
+				GEditor->GetSelectedActors()->GetSelectedObjects<AActor>(SelectedActors);
+				Subsystem->SaveSnapshot(FinalName, SelectedActors);
+			}
 
 			RebuildSnapshotList();
 			if (SnapshotListView.IsValid())

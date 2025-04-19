@@ -45,6 +45,8 @@ public:
 	UFUNCTION(CallInEditor, Category="Snapshots")
 	void SaveSnapshot(FName SnapshotName);
 
+	void SaveSnapshot(FName SnapshotName, const TArray<AActor*>& ActorsToSave);
+
 	UFUNCTION(CallInEditor, Category="Snapshots")
 	void RestoreSnapshot(FName SnapshotName, FDateTime Timestamp);
 

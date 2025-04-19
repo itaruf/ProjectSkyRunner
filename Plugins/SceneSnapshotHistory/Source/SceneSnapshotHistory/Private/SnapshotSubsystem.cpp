@@ -31,6 +31,27 @@ void USnapshotSubsystem::SaveSnapshot(FName SnapshotName)
 	SavedSnapshots.Add(Snap);
 }
 
+void USnapshotSubsystem::SaveSnapshot(FName SnapshotName, const TArray<AActor*>& ActorsToSave)
+{
+	FSceneSnapshot Snap;
+	Snap.SnapshotName = SnapshotName;
+	Snap.Timestamp = FDateTime::Now();
+
+	for (AActor* Actor : ActorsToSave)
+	{
+		if (!IsValid(Actor)) continue;
+
+		FSceneSnapshotActorData Data;
+		Data.ActorName = Actor->GetFName();
+		Data.ActorTransform = Actor->GetActorTransform();
+		Data.bVisible = !Actor->IsHidden();
+		Snap.ActorStates.Add(Data);
+	}
+
+	SavedSnapshots.Add(Snap);
+}
+
+
 void USnapshotSubsystem::RestoreSnapshot(FName SnapshotName, FDateTime Timestamp)
 {
 	const FSceneSnapshot* Snap = FindSnapshot(SnapshotName, Timestamp);
