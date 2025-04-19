@@ -48,6 +48,29 @@ void USnapshotSubsystem::SaveSnapshot(FName SnapshotName, const TArray<AActor*>&
 	SavedSnapshots.Add(MoveTemp(Snap));
 }
 
+void USnapshotSubsystem::SaveSnapshotAsync(FName SnapshotName)
+{
+	if (!GetWorld()) 
+	{
+		return;
+	}
+
+	AsyncTask(ENamedThreads::GameThread, [this, SnapshotName]()
+	{
+		SaveSnapshot(SnapshotName);
+	});
+}
+
+void USnapshotSubsystem::CommitSnapshot(FName SnapshotName, TArray<FSceneSnapshotActorData>&& Collected)
+{
+	FSceneSnapshot Snap;
+	Snap.SnapshotName = SnapshotName;
+	Snap.Timestamp = FDateTime::Now();
+	Snap.ActorStates = MoveTemp(Collected);
+
+	SavedSnapshots.Add(MoveTemp(Snap));
+}
+
 void USnapshotSubsystem::RestoreSnapshot(FName SnapshotName, FDateTime Timestamp)
 {
 	const FSceneSnapshot* Found = FindSnapshot(SnapshotName, Timestamp);

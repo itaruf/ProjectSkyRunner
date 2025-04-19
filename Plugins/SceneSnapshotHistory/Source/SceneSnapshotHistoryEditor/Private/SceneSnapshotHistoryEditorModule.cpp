@@ -10,6 +10,7 @@ static const FName SceneSnapshotHistoryTabName("SceneSnapshotHistory");
 
 void FSceneSnapshotHistoryEditorModule::StartupModule()
 {
+	// 1) register our tab
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
 		                        SceneSnapshotHistoryTabName,
 		                        FOnSpawnTab::CreateStatic(&FSceneSnapshotHistoryEditorModule::OnSpawnPluginTab)
@@ -17,22 +18,33 @@ void FSceneSnapshotHistoryEditorModule::StartupModule()
 	                        .SetDisplayName(LOCTEXT("TabTitle", "Scene Snapshots"))
 	                        .SetMenuType(ETabSpawnerMenuType::Hidden);
 
-	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
-
-	TSharedPtr<FExtender> Extender = MakeShareable(new FExtender());
-	Extender->AddMenuBarExtension(
-		"Window",
-		EExtensionHook::After,
-		nullptr,
-		FMenuBarExtensionDelegate::CreateRaw(this, &FSceneSnapshotHistoryEditorModule::AddMenuBarExtension)
-	);
-
-	LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(Extender);
+	// 2) add menu‑bar extender
+	if (FModuleManager::Get().IsModuleLoaded("LevelEditor"))
+	{
+		FLevelEditorModule& LE = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+		MenuExtender = MakeShared<FExtender>();
+		MenuExtender->AddMenuBarExtension(
+			"Window",
+			EExtensionHook::After,
+			nullptr,
+			FMenuBarExtensionDelegate::CreateRaw(this, &FSceneSnapshotHistoryEditorModule::AddMenuBarExtension)
+		);
+		LE.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
+	}
 }
 
 void FSceneSnapshotHistoryEditorModule::ShutdownModule()
 {
+	// Unregister our tab
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SceneSnapshotHistoryTabName);
+
+	// Remove our menu extender if LevelEditor is still around
+	if (FModuleManager::Get().IsModuleLoaded("LevelEditor") && MenuExtender.IsValid())
+	{
+		FLevelEditorModule& LE = FModuleManager::GetModuleChecked<FLevelEditorModule>("LevelEditor");
+		LE.GetMenuExtensibilityManager()->RemoveExtender(MenuExtender);
+		MenuExtender.Reset();
+	}
 }
 
 TSharedRef<SDockTab> FSceneSnapshotHistoryEditorModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)

@@ -9,6 +9,8 @@ public:
 	void ShutdownModule() override;
 
 private:
+	TSharedPtr<FExtender> MenuExtender;
+
 	static TSharedRef<SDockTab> OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs);
 	void AddMenuBarExtension(FMenuBarBuilder& Builder);
 	void PluginButtonClicked();

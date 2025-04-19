@@ -2,7 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Async/AsyncWork.h"
 #include "SnapshotSubsystem.generated.h"
+
 
 USTRUCT()
 struct FSceneSnapshotActorData
@@ -54,6 +56,13 @@ public:
 
 	/** Save only selected actors */
 	void SaveSnapshot(FName SnapshotName, const TArray<AActor*>& ActorsToSave);
+
+	/** Kicks off an async snapshot; UI will stay responsive. */
+	UFUNCTION(CallInEditor, Category="Snapshots")
+	void SaveSnapshotAsync(FName SnapshotName);
+
+	/** (Internal) actually commit a snapshot on the game thread. */
+	void CommitSnapshot(FName SnapshotName, TArray<FSceneSnapshotActorData>&& Collected);
 
 	/** Restore by name + timestamp */
 	UFUNCTION(CallInEditor, Category = "Snapshots")

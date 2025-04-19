@@ -140,7 +140,7 @@ FReply SSceneSnapshotHistoryWidget::OnSaveSnapshotClicked()
 		{
 			if (CurrentMode == ESnapshotCaptureMode::Scene)
 			{
-				Sub->SaveSnapshot(FinalName);
+				Sub->SaveSnapshotAsync(FinalName);
 			}
 			else
 			{
@@ -186,12 +186,16 @@ void SSceneSnapshotHistoryWidget::RebuildSnapshotList()
 				{
 					if (UTexture2D* Tex = FImageUtils::ImportFileAsTexture2D(Entry->ThumbnailPath))
 					{
+						// root it so UE’s GC won’t destroy it when nothing else references it
+						Tex->AddToRoot();
+
 						Entry->ThumbnailBrush = MakeShared<FSlateImageBrush>(
 							Tex,
 							FVector2D(64.f, 64.f)
 						);
 					}
 				}
+
 				// fallback
 				if (!Entry->ThumbnailBrush.IsValid())
 				{
